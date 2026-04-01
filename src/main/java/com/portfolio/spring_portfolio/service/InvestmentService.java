@@ -1,7 +1,10 @@
 package com.portfolio.spring_portfolio.service;
 
+import com.portfolio.spring_portfolio.model.Fund;
 import com.portfolio.spring_portfolio.model.Investment;
+import com.portfolio.spring_portfolio.repository.FundRepository;
 import com.portfolio.spring_portfolio.repository.InvestmentRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +15,28 @@ import java.util.List;
 public class InvestmentService {
 
     private final InvestmentRepository investmentRepository;
+    private final FundRepository fundRepository;
+
+    // PostConstruct annotation makes sure that there is a fun row with 10mil, if it doesn't exist, it creates new row
+    @PostConstruct
+    public void initFund() {
+        if (fundRepository.findById(1L).isEmpty()) {
+            fundRepository.save(new Fund(1L, 10_000_000.0));
+        }
+    }
+
+    public Double getTotalFund() {
+        return fundRepository.findById(1L)
+                .map(Fund::getTotalFund)
+                .orElse(10_000_000.0);
+    }
+
+    public void addToFund(Double amount) {
+        Fund fund = fundRepository.findById(1L).
+                orElse(new Fund(1L, 10_000_000.0));
+        fund.setTotalFund(fund.getTotalFund() + amount);
+        fundRepository.save(fund);
+    }
 
     public List<Investment> getAllInvestments() {
         return investmentRepository.findAll();
@@ -22,14 +47,14 @@ public class InvestmentService {
                 .orElseThrow(() -> new RuntimeException("Investment not found with id: " + id));
     }
 
-    public Investment addInvestment(Investment investment) {
-        return investmentRepository.save(investment);
+    public void addInvestment(Investment investment) {
+        investmentRepository.save(investment);
     }
 
-    public Investment updateInvestmentName(Long id, String newName) {
+    public void updateInvestmentName(Long id, String newName) {
         Investment existing = getInvestmentById(id);
         existing.setName(newName);
-        return investmentRepository.save(existing);
+        investmentRepository.save(existing);
     }
 
     public void deleteInvestment(Long id) {
@@ -44,7 +69,7 @@ public class InvestmentService {
     }
 
     public Double getRemainingFund() {
-        return 10_000_000.0 - getTotalInvested();
+        return getTotalFund() - getTotalInvested();
     }
 
     public List<Investment> getSortedInvestments(String sortBy) {
@@ -54,9 +79,5 @@ public class InvestmentService {
             case "nameAsc"    -> investmentRepository.findAllByOrderByNameAsc();
             default           -> investmentRepository.findAll();
         };
-    }
-
-    public void addToFund(Double fund) {
-
     }
 }

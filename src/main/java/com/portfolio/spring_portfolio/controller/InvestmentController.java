@@ -24,25 +24,23 @@ public class InvestmentController {
         model.addAttribute("investments", investmentService.getSortedInvestments(sortBy));
         model.addAttribute("totalInvested", investmentService.getTotalInvested());
         model.addAttribute("remainingFund", investmentService.getRemainingFund());
+        model.addAttribute("totalFund", investmentService.getTotalFund());
         model.addAttribute("sortBy", sortBy);
         return "investments/list";
     }
 
-    // DETAIL - show one investment
     @GetMapping("/{id}")
     public String getInvestment(@PathVariable Long id, Model model) {
         model.addAttribute("investment", investmentService.getInvestmentById(id));
         return "investments/detail";
     }
 
-    // SHOW ADD FORM
     @GetMapping("/new")
     public String showAddForm(Model model) {
         model.addAttribute("investment", new Investment());
         return "investments/form";
     }
 
-    // SUBMIT ADD FORM
     @PostMapping
     public String addInvestment(
             @Valid @ModelAttribute Investment investment,
@@ -54,14 +52,12 @@ public class InvestmentController {
         return "redirect:/investments";
     }
 
-    // SHOW EDIT FORM
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Long id, Model model) {
         model.addAttribute("investment", investmentService.getInvestmentById(id));
         return "investments/edit";
     }
 
-    // SUBMIT EDIT FORM
     @PostMapping("/{id}/edit")
     public String updateInvestment(
             @PathVariable Long id,
@@ -70,14 +66,12 @@ public class InvestmentController {
         return "redirect:/investments";
     }
 
-    // DELETE
     @PostMapping("/{id}/delete")
     public String deleteInvestment(@PathVariable Long id) {
         investmentService.deleteInvestment(id);
         return "redirect:/investments";
     }
 
-    // ADD TO FUND
     @PostMapping("/add-to-fund")
     public String addToFund(@RequestParam Double amount) {
         investmentService.addToFund(amount);
